@@ -1,23 +1,22 @@
-$('#saveBtn').click(function() {
-    console.log("save")
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {type: 'save_textbox'}, function() {
-            alert('保存成功！');
+document.getElementById("saveButton").addEventListener("click", function() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(results) {
+        chrome.tabs.sendMessage(results[0].id, {action: "save"}, function(response) {
+            console.log(response.message);
         });
     });
 });
 
-$('#fillBtn').click(function() {
-    console.log("fill")
-    var inputs = $('input[type="text"], textarea');
-    inputs.each(function() {
-        $(this).val('');
+document.getElementById("fillButton").addEventListener("click", function() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(results) {
+        chrome.tabs.sendMessage(results[0].id, {action: "fill"}, function(response) {
+            console.log(response.message);
+        });
     });
 });
 
-document.getElementById("saveButton").addEventListener("click", function() {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "saveInputs"}, function(response) {
+document.getElementById("resetButton").addEventListener("click", function() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(results) {
+        chrome.tabs.sendMessage(results[0].id, {action: "reset"}, function(response) {
             console.log(response.message);
         });
     });

@@ -5,7 +5,6 @@
     "version": "1.0",
     "action": {
         "default_popup": "popup/popup.html"
-//        "default_icon": ""
     },
     "background": {
         "service_worker": "scripts/background.js"
@@ -15,7 +14,8 @@
         {
             "js": ["scripts/jquery-3.7.0.min.js", "scripts/content_script.js"],
             "matches": [
-                "https://stgc5.talkappi.com/*"
+                "https://stgc5.talkappi.com/*",
+                "https://inquiry.talkappi.com/inquiry/*"
             ]
         }
     ]

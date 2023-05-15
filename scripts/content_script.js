@@ -1,52 +1,46 @@
-// const inputBoxes = $('input')
-// console.log(inputBoxes)
-// inputBoxes.map(function(input) {
-//   console.log($(input).val())
-// })
+// Maybe url parse here?
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.action === "save") {
+    const link = location.href
+    const params = new URLSearchParams(link);
+    const inquiryId = params.get('inquiry_id');
 
-
-// inputBoxes.forEach(function(textbox) {
-//   textbox.addEventListener('input', function() {
-//     chrome.runtime.sendMessage({
-//       type: 'save_textbox',
-//       id: textbox.id,
-//       value: textbox.value
-//     });
-//   });
-// });
-
-// window.addEventListener('save', function() {
-//   const inputBoxes = $('input')
-//   console.log(inputBoxes)
-//   inputBoxes.map(function(input) {
-//     console.log($(input).val())
-//   })
-// })
-
-// window.addEventListener('load', function() {
-//   textboxes.forEach(function(textbox) {
-//     chrome.runtime.sendMessage({
-//       type: 'get_textbox',
-//       id: textbox.id
-//     }, function(response) {
-//       if (response.value) {
-//         textbox.value = response.value;
-//       }
-//     });
-//   });
-// });
-
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === "saveInputs") {
-    var inputs = document.getElementsByTagName("input");
-    var inputValues = {};
-
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i];
-      inputValues[input.name] = input.value;
+    let inputMap = {
+      "inquiryId": inquiryId, 
+      "inputValues": []
     }
-    chrome.runtime.sendMessage({action: "saveInputValues", values: inputValues}, function(response) {
-      sendResponse({message: response.message});
+
+    $("input").each(function () {
+      const value = $(this).val()
+      console.log(value)
+      inputMap.inputValues.push(value)
     });
+
+    console.log(inputMap.inputValues)
+
+/*     var inputValues = $("input").map((index, input) => {
+      console.log($(this).val())
+      return $(this).val()
+    }) */
+
+    chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap.inputValues}, function (response) {
+      //sendResponse({ message: response.message });
+    });
+  }
+
+  if (request.action === "fill") {
+    const link = location.href
+    const params = new URLSearchParams(link);
+    const inquiryId = params.get('inquiry_id');
+
+    chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId}, function (response) {
+      $("input").array.forEach((element, index) => {
+        $(this).val(response.inputValues[index]) 
+      });
+      //sendResponse({ message: response.message });
+    });
+  }
+
+  if (request.action === "reset") {
   }
 });
