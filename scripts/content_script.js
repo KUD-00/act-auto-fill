@@ -7,16 +7,49 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     let inputMap = {
       "inquiryId": inquiryId, 
-      "inputValues": []
+      "inputValues": {}
     }
 
-    $("input").each(function () {
+    // get all class with inquiry-entry
+    $(".inquiry-entry").each((index, element) => {
+      console.log(element)
+      const entryNo = $(element).attr("data-entry-no")
+      console.log(entryNo)
+      let inputValues = []
+      let textareaValues = []
+      let selectorValues = []
+      // get all input textarea selector
+
+      $(element).find("input").each((index, element) => {
+        inputValues.push($(element).val())
+      })
+
+      $(element).find("textarea").each((index, element) => {
+        textareaValues.push($(element).val())
+      })
+
+      $(element).find("select").each((index, element) => {
+        selectorValues.push($(element).find(":selected").val())
+      })
+
+      inputMap.inputValues[entryNo] = {
+        "inputValues": inputValues,
+        "textareaValues": textareaValues,
+        "selectorValues": selectorValues
+      }
+/*       const inputValuesFunctional = $(this).find("input").map(() => {
+        return $(this).val()
+      }) */
+    })
+    console.log(inputMap)
+
+/*     $("input").each(function () {
       const value = $(this).val()
       console.log(value)
       inputMap.inputValues.push(value)
     });
 
-    console.log(inputMap.inputValues)
+    console.log(inputMap.inputValues) */
 
 /*     var inputValues = $("input").map((index, input) => {
       console.log($(this).val())
