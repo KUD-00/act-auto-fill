@@ -1,27 +1,34 @@
 // Maybe url parse here?
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "save") {
     const link = location.href
     const params = new URLSearchParams(link);
     const inquiryId = params.get('inquiry_id');
 
-    let inputMap = {
-      "inquiryId": inquiryId, 
-      "inputValues": {}
-    }
+    let inputMap = {}
+    inputMap[inquiryId] = {}
 
     // get all class with inquiry-entry
     $(".inquiry-entry").each((index, element) => {
-      console.log(element)
       const entryNo = $(element).attr("data-entry-no")
-      console.log(entryNo)
+      if (entryNo == undefined) return;
+
       let inputValues = []
       let textareaValues = []
       let selectorValues = []
+      let optionValues = []
       // get all input textarea selector
 
       $(element).find("input").each((index, element) => {
-        inputValues.push($(element).val())
+        if ($(element).attr("type") === "radio" || $(element).attr("type") === "checkbox") {
+          if ($(element).prop("checked")){
+            optionValues.push(1)
+          } else {
+            optionValues.push(0)
+          }
+        } else {
+          inputValues.push($(element).val())
+        }
       })
 
       $(element).find("textarea").each((index, element) => {
@@ -32,33 +39,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         selectorValues.push($(element).find(":selected").val())
       })
 
-      inputMap.inputValues[entryNo] = {
+      inputMap[inquiryId][entryNo] = {
         "inputValues": inputValues,
         "textareaValues": textareaValues,
-        "selectorValues": selectorValues
+        "selectorValues": selectorValues,
+        "optionValues": optionValues
       }
-/*       const inputValuesFunctional = $(this).find("input").map(() => {
-        return $(this).val()
-      }) */
     })
-    console.log(inputMap)
+    console.log(inputMap);
 
-/*     $("input").each(function () {
-      const value = $(this).val()
-      console.log(value)
-      inputMap.inputValues.push(value)
-    });
-
-    console.log(inputMap.inputValues) */
-
-/*     var inputValues = $("input").map((index, input) => {
-      console.log($(this).val())
-      return $(this).val()
-    }) */
-
-    chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap.inputValues}, function (response) {
-      //sendResponse({ message: response.message });
-    });
+    (async () => {
+      const saveResponse = await chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap, greeting: "hello"});
+      console.log(saveResponse);
+      sendResponse({ message: response.message });
+    })();
   }
 
   if (request.action === "fill") {
@@ -66,14 +60,26 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const params = new URLSearchParams(link);
     const inquiryId = params.get('inquiry_id');
 
-    chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId}, function (response) {
-      $("input").array.forEach((element, index) => {
-        $(this).val(response.inputValues[index]) 
-      });
+    (async () => {
+      const fillResponse = await chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId })
+      console.log(fillResponse);
       //sendResponse({ message: response.message });
-    });
-  }
+    })();
 
-  if (request.action === "reset") {
+    chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId }, function (response) {
+      $(".inquiry-entry").each((index, element) => {
+        const entryNo = $(element).attr("data-entry-no")
+        if (entryNo === undefined) return;
+
+        const data = response[entryNo]
+        
+        if (data.textareaValues.length != 0) {
+          $(element).find("textarea").each((index, element) => {
+            $(element).val(data.textareaValues[index])
+          })
+        }
+        //sendResponse({ message: response.message });
+      });
+    })
   }
 });
