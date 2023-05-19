@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       $(element).find("input").each((index, element) => {
         if ($(element).attr("type") === "radio" || $(element).attr("type") === "checkbox") {
-          if ($(element).prop("checked")){
+          if ($(element).prop("checked")) {
             optionValues.push(1)
           } else {
             optionValues.push(0)
@@ -46,10 +46,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "optionValues": optionValues
       }
     })
+
     console.log(inputMap);
 
     (async () => {
-      const saveResponse = await chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap, greeting: "hello"});
+      const saveResponse = await chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap, greeting: "hello" });
       console.log(saveResponse);
       sendResponse({ message: response.message });
     })();
@@ -62,24 +63,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     (async () => {
       const fillResponse = await chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId })
-      console.log(fillResponse);
-      //sendResponse({ message: response.message });
-    })();
+      const data = fillResponse["inputValues"][inquiryId]
+      console.log(data);
 
-    chrome.runtime.sendMessage({ action: "fillInputValues", values: inquiryId }, function (response) {
       $(".inquiry-entry").each((index, element) => {
         const entryNo = $(element).attr("data-entry-no")
         if (entryNo === undefined) return;
 
-        const data = response[entryNo]
-        
-        if (data.textareaValues.length != 0) {
+        const entryData = data[entryNo]
+
+        if (entryData.textareaValues.length != 0) {
           $(element).find("textarea").each((index, element) => {
-            $(element).val(data.textareaValues[index])
+            $(element).val(entryData.textareaValues[Number(index)])
           })
         }
+
+        if (entryData.selectorValues.length != 0) {
+          $(element).find("select").each((index, element) => {
+            // delete what is selected
+            $(element).find(":selected").removeAttr(':selected');
+            $(element).find((`option:eq(${Number(entryData.selectorValues[index])})`)).attr(':selected',':selected')
+          })
+        }
+
+        if (entryData.inputValues.length != 0 || entryData.optionValues.length != 0) {
+          $(element).find("input").each((index, element) => {
+            if ($(element).attr("type") === "radio" || $(element).attr("type") === "checkbox") {
+              console.log(entryNo);
+              console.log(entryData);
+              if (entryData.optionValues[Number(index)] == 1) {
+                console.log("HERE")
+                $(element).prop('checked', true)
+              }
+            } else {
+              $(element).val(entryData.inputValues[Number(index)])
+            }
+          })
+        }
+
         //sendResponse({ message: response.message });
       });
-    })
+    })();
   }
 });

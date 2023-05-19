@@ -6,6 +6,7 @@ chrome.runtime.onMessage.addListener(
       });
       return true;
     }
+
     if (request.action === "fillInputValues") {
       chrome.storage.local.get([request.values]).then((result) => {
         console.log(result);
