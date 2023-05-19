@@ -1,4 +1,5 @@
 // Maybe url parse here?
+// 一些已经不小心选中的东西应该先删除
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "save") {
     const link = location.href
@@ -47,11 +48,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     })
 
-    console.log(inputMap);
-
     (async () => {
       const saveResponse = await chrome.runtime.sendMessage({ action: "saveInputValues", values: inputMap, greeting: "hello" });
-      console.log(saveResponse);
       sendResponse({ message: response.message });
     })();
   }
@@ -80,7 +78,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         if (entryData.selectorValues.length != 0) {
           $(element).find("select").each((index, element) => {
-            // delete what is selected
             $(element).find(":selected").removeAttr(':selected');
             $(element).find((`option:eq(${Number(entryData.selectorValues[index])})`)).attr(':selected',':selected')
           })
@@ -89,10 +86,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (entryData.inputValues.length != 0 || entryData.optionValues.length != 0) {
           $(element).find("input").each((index, element) => {
             if ($(element).attr("type") === "radio" || $(element).attr("type") === "checkbox") {
-              console.log(entryNo);
-              console.log(entryData);
               if (entryData.optionValues[Number(index)] == 1) {
-                console.log("HERE")
                 $(element).prop('checked', true)
               }
             } else {
